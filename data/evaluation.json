@@ -1,0 +1,28 @@
+
+[
+  {
+    "question": "Who can access confidential customer records?",
+    "expected_source": "security.md",
+    "expected_evidence": "Access to confidential customer records is restricted to authorised personnel."
+  },
+  {
+    "question": "How can we recover data after corruption?",
+    "expected_source": "backups.md",
+    "expected_evidence": "If data is accidentally deleted or corrupted, the operations team can restore an appropriate backup."
+  },
+  {
+    "question": "How should access permissions be assigned to employees?",
+    "expected_source": "security.md",
+    "expected_evidence": "each employee receives only the access needed to perform their job"
+  },
+  {
+    "question": "How do we check that restored data is complete?",
+    "expected_source": "backups.md",
+    "expected_evidence": "The team records recovery times and checks that restored data is complete."
+  },
+  {
+    "question": "What is the company's policy for employee holiday allowances?",
+    "expected_source": null,
+    "expected_evidence": null
+  }
+]
