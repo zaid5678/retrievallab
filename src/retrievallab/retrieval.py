@@ -11,15 +11,19 @@ class SemanticRetriever:
         chunk_size: int = 50,
         overlap: int = 10,
         model_name: str = "all-MiniLM-L6-v2",
+        chunks: list[dict] | None = None,
     ):
         self.model = SentenceTransformer(model_name)
 
-        documents = load_documents()
-        self.chunks = chunk_documents(
-            documents,
-            chunk_size=chunk_size,
-            overlap=overlap,
-        )
+        if chunks is None:
+            documents = load_documents()
+            chunks = chunk_documents(
+                documents,
+                chunk_size=chunk_size,
+                overlap=overlap,
+            )
+
+        self.chunks = chunks
 
         if not self.chunks:
             raise ValueError("No document chunks found.")

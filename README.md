@@ -139,6 +139,35 @@ The current evaluation dataset is intentionally small and intended for experimen
 
 > Evaluation results depend on the dataset, chunking strategy, embedding model, and evidence-matching method. Scores on a small dataset should not be interpreted as proof of production-level retrieval quality.
 
+## 🛡️ Security Compliance Benchmark (NIST SP 800-53)
+
+Security teams spend hours answering vendor questionnaires ("Do you enforce MFA for admins?") by finding the relevant control or policy. RetrievalLab includes a benchmark for this task:
+
+- **Corpus:** the full NIST SP 800-53 Rev. 5 catalog (1,014 active controls and enhancements), parsed from NIST's official OSCAL JSON with parameter placeholders filled in and withdrawn controls removed.
+- **Questions:** 68 questionnaire-style questions written as a customer would phrase them, each labelled with the control IDs that count as correct, plus 6 out-of-scope questions reserved for refusal evaluation.
+
+```bash
+python scripts/download_nist.py
+python scripts/evaluate_nist.py
+```
+
+Results with `all-MiniLM-L6-v2`, k=5:
+
+| Chunking | Chunks | Controls/chunk | Hit@1 | Recall@5 | MRR | Base-control Recall@5 |
+|---|---:|---:|---:|---:|---:|---:|
+| 100-word windows, 20 overlap | 1666 | 1.75 | 0.471 | 0.956 | 0.673 | 0.971 |
+| 200-word windows, 40 overlap | 837 | 2.50 | 0.588 | 0.912 | 0.720 | 0.941 |
+| One chunk per control | 1014 | 1.00 | 0.500 | 0.882 | 0.652 | 0.971 |
+| One chunk per control, no discussion | 1014 | 1.00 | 0.529 | 0.868 | 0.664 | 0.971 |
+
+**Findings**
+
+- **Word windows look better than they are.** A word window often spans several controls and gets credit if any of them is correct, so its strict Recall@5 is inflated.
+- **Base controls lose to their own enhancements.** Most per-control misses retrieve an enhancement of the right control (e.g. `SC-12(2)` instead of `SC-12`). When an enhancement counts as a match for its base control, all strategies reach the same base-control Recall@5 of 0.971. Many base controls are also longer than MiniLM's 256-token input limit, so they are cut off when embedded.
+- **Ranking is the bottleneck, not recall.** The right control family is almost always in the top 5, but Hit@1 is only around 0.5. This points to reranking or hierarchy-aware retrieval as the next step.
+
+> The question set was written for this project and is small. Treat these numbers as a baseline for comparing changes, not as a general benchmark.
+
 ## 🧪 Experiments
 
 The project explores how retrieval performance changes with parameters such as:
@@ -187,7 +216,10 @@ retrievallab/
 - [ ] Hybrid search with BM25 and dense retrieval
 - [ ] Cross-encoder reranking
 - [ ] Answer faithfulness and citation evaluation
-- [ ] Larger, more diverse evaluation dataset
+- [x] NIST SP 800-53 corpus and questionnaire benchmark
+- [ ] Hierarchy-aware retrieval (parent and enhancement controls)
+- [ ] Answer refusal evaluation on out-of-scope questions
+- [ ] Questionnaire CSV in, cited answers CSV out
 - [ ] Retrieval and generation latency measurements
 
 ## 🎯 Project Goals
